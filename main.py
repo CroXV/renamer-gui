@@ -17,6 +17,36 @@ class MyWindow(Ui_MainWindow):
     def setupUi(self, mw):
         super().setupUi(mw)
 
+        # Connect all
+        self.reconnect()
+
+        # Hide line's label and line edit
+        self.tvshow_label.hide()
+        self.tvshow_line.hide()
+        self.anime_label.hide()
+        self.anime_line.hide()
+        self.subtitle_label.hide()
+        self.subtitle_line.hide()
+
+        # Hide confirmation, and proceed button
+        self.confirmation_button.hide()
+        self.proceed_button.hide()
+
+        # Enable clear button in read only mode for directory line edit
+        # self.dir_line.findChild(QtWidgets.QToolButton).setEnabled(True)
+
+        # Validate user input
+        reg_ex = QtCore.QRegExp(r'[^\/?:*"|<>]*')
+        self.tvshow_line.setValidator(QtGui.QRegExpValidator(reg_ex, self.tvshow_line))
+        self.anime_line.setValidator(QtGui.QRegExpValidator(reg_ex, self.anime_line))
+        self.subtitle_line.setValidator(QtGui.QRegExpValidator(reg_ex, self.subtitle_line))
+
+        # Check confirmation button to rename or cancel
+        self.confirmation_button.accepted.connect(lambda: rename.main.renamer(self, self.files))
+        self.confirmation_button.button(QtWidgets.QDialogButtonBox.Reset).clicked.connect(
+            lambda: self.clear_all())
+
+    def reconnect(self):
         # Connect proceed button to start renamer
         self.proceed_button.clicked.connect(lambda: self.script())
 
@@ -44,35 +74,25 @@ class MyWindow(Ui_MainWindow):
         self.anime_checkbox.clicked.connect(lambda: self.movie_checkbox_only())
         self.subtitle_checkbox.clicked.connect(lambda: self.movie_checkbox_only())
 
-        # Hide line's label and line edit
-        self.tvshow_label.hide()
-        self.tvshow_line.hide()
-        self.anime_label.hide()
-        self.anime_line.hide()
-        self.subtitle_label.hide()
-        self.subtitle_line.hide()
-
-        # Hide confirmation, and proceed button
-        self.confirmation_button.hide()
-        self.proceed_button.hide()
-
         # Clear directory line edit when clicked and open folder browser
         self.dir_line.clicked.connect(self.dir_line.clear)
         self.dir_line.clicked.connect(lambda: self.browse_dir())
 
-        # Enable clear button in read only mode for directory line edit
-        # self.dir_line.findChild(QtWidgets.QToolButton).setEnabled(True)
+    def disconnect(self):
+        # Disconnect
+        self.dir_line.disconnect()
+        self.browse_button.disconnect()
 
-        # Validate user input
-        reg_ex = QtCore.QRegExp(r'[^\/?:*"|<>]*')
-        self.tvshow_line.setValidator(QtGui.QRegExpValidator(reg_ex, self.tvshow_line))
-        self.anime_line.setValidator(QtGui.QRegExpValidator(reg_ex, self.anime_line))
-        self.subtitle_line.setValidator(QtGui.QRegExpValidator(reg_ex, self.subtitle_line))
+        self.movies_checkbox.disconnect()
+        self.tvshow_checkbox.disconnect()
+        self.anime_checkbox.disconnect()
+        self.subtitle_checkbox.disconnect()
 
-        # Check confirmation button to rename or cancel
-        self.confirmation_button.accepted.connect(lambda: rename.main.renamer(self, self.files))
-        self.confirmation_button.button(QtWidgets.QDialogButtonBox.Reset).clicked.connect(
-            lambda: self.clear_all())
+        self.tvshow_line.returnPressed.disconnect()
+        self.anime_line.returnPressed.disconnect()
+        self.subtitle_line.returnPressed.disconnect()
+
+        self.proceed_button.disconnect()
 
     def clear_all(self):
         self.files = {}
@@ -88,8 +108,10 @@ class MyWindow(Ui_MainWindow):
         checkedboxes = self.is_checked(return_keys=False)
         for checkbox in checkedboxes:
             checkbox.setChecked(False)
-
+        # Hide all editlines
         self.show_editline()
+        # Reconnect all
+        self.reconnect()
 
     def browse_dir(self):
         """Opens folder browser and writes chosen folder location to directory line edit."""
@@ -253,6 +275,8 @@ class MyWindow(Ui_MainWindow):
 
             # show confirm button
             self.confirmation_button.show()
+
+            self.disconnect()
 
 
 if __name__ == "__main__":

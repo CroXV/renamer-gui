@@ -18,7 +18,7 @@ def renamer(instance, rename_items):
         instance.files = {}
         instance.text_browser_print('Done.\n')
     else:
-        instance.text_browser_print('No Items to Rename.')
+        instance.text_browser_print('No Files to Rename.')
     # while True:
     #     confirm = input('> ').lower()
     #
